@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,90 +10,185 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final rutController = TextEditingController();
-  final passController = TextEditingController();
+  final _rutController = TextEditingController();
+  final _contrasenaController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    rutController.dispose();
-    passController.dispose();
+    _rutController.dispose();
+    _contrasenaController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      final ok = await auth.login(rutController.text.trim(), passController.text.trim());
-      if (ok) {
-        // Navega al Dashboard (puedes cambiar la ruta si lo deseas)
-        Navigator.of(context).pushReplacementNamed('/dashboard');
-      } else {
-        final error = auth.error ?? 'Error desconocido. Intenta nuevamente.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red),
-        );
-      }
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final result = await AuthService.login(
+      _rutController.text.trim(),
+      _contrasenaController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      // Login exitoso, navegar al home
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Mostrar error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Error al iniciar sesión'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ingreso de Jefe - NUAM'),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                Text(
-                  '¡Bienvenido, Jefe!',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 30),
-                TextFormField(
-                  controller: rutController,
-                  decoration: const InputDecoration(
-                    labelText: 'RUT',
-                    hintText: 'Ej: 12345678-9',
-                    prefixIcon: Icon(Icons.badge),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo o Título
+                  Icon(
+                    Icons.account_balance,
+                    size: 80,
+                    color: Theme.of(context).primaryColor,
                   ),
-                  validator: (val) =>
-                      val != null && val.trim().isEmpty ? 'Ingrese su RUT' : null,
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: passController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock),
+                  const SizedBox(height: 16),
+                  Text(
+                    'NUAM',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
                   ),
-                  validator: (val) =>
-                      val != null && val.trim().isEmpty ? 'Contraseña requerida' : null,
-                ),
-                const SizedBox(height: 26),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: auth.isLoading ? null : _login,
-                    child: auth.isLoading
+                  const SizedBox(height: 8),
+                  Text(
+                    'Jefe de Equipo',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Campo RUT
+                  TextFormField(
+                    controller: _rutController,
+                    decoration: InputDecoration(
+                      labelText: 'RUT',
+                      hintText: '12345678-9',
+                      prefixIcon: const Icon(Icons.badge),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    keyboardType: TextInputType.text,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese su RUT';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Campo Contraseña
+                  TextFormField(
+                    controller: _contrasenaController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese su contraseña';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botón de Login
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isLoading
                         ? const SizedBox(
-                            width: 25,
-                            height: 25,
+                            height: 20,
+                            width: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5),
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
                           )
-                        : const Text('Ingresar'),
+                        : const Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(fontSize: 16),
+                          ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+
+                  // Nota informativa
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Solo Jefes de Equipo pueden acceder',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[900],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

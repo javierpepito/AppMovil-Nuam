@@ -11,9 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
-  # Supabase
-  supabase_flutter: ^2.3.1
 
   # State Management
   provider: ^6.1.1

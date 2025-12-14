@@ -1,49 +1,92 @@
+/// Modelo para Calificación Tributaria
 class Calificacion {
-  final int id;
-  final String empresa;
+  final int calificacionId;
+  final String empresaRut;
+  final String empresaNombre;
+  final String empresaPais;
   final int anioTributario;
   final String tipoCalificacion;
-  final double monto;
-  final double factor;
+  final int montoTributario;
+  final String factorTributario;
   final String unidadValor;
-  final int puntaje;
-  final String categoria;
-  final String riesgo;
-  final String estado;
-  final String? justificacion;
+  final int puntajeCalificacion;
+  final String categoriaCalificacion;
+  final String nivelRiesgo;
+  final String justificacionResultado;
   final DateTime fechaCalculo;
+  final String calificadorNombre;
+  final String? estado; // Para historial: 'aprobado' o 'rechazado'
+  final DateTime? fechaRevision; // Para historial
+  final String? observaciones; // Para historial
 
   Calificacion({
-    required this.id,
-    required this.empresa,
+    required this.calificacionId,
+    required this.empresaRut,
+    required this.empresaNombre,
+    required this.empresaPais,
     required this.anioTributario,
     required this.tipoCalificacion,
-    required this.monto,
-    required this.factor,
+    required this.montoTributario,
+    required this.factorTributario,
     required this.unidadValor,
-    required this.puntaje,
-    required this.categoria,
-    required this.riesgo,
-    required this.estado,
+    required this.puntajeCalificacion,
+    required this.categoriaCalificacion,
+    required this.nivelRiesgo,
+    required this.justificacionResultado,
     required this.fechaCalculo,
-    this.justificacion,
+    required this.calificadorNombre,
+    this.estado,
+    this.fechaRevision,
+    this.observaciones,
   });
 
   factory Calificacion.fromJson(Map<String, dynamic> json) {
     return Calificacion(
-      id: json['calificacion_id'] is int ? json['calificacion_id'] : int.tryParse(json['calificacion_id'].toString()) ?? 0,
-      empresa: json['nombre_empresa'] ?? '',
+      calificacionId: json['calificacion_id'] ?? 0,
+      empresaRut: json['empresa_rut'] ?? '',
+      empresaNombre: json['empresa_nombre'] ?? '',
+      empresaPais: json['empresa_pais'] ?? '',
       anioTributario: json['anio_tributario'] ?? 0,
       tipoCalificacion: json['tipo_calificacion'] ?? '',
-      monto: (json['monto_tributario'] is num) ? (json['monto_tributario'] as num).toDouble() : double.tryParse(json['monto_tributario'].toString()) ?? 0,
-      factor: (json['factor_tributario'] is num) ? (json['factor_tributario'] as num).toDouble() : double.tryParse(json['factor_tributario'].toString()) ?? 0,
+      montoTributario: json['monto_tributario'] ?? 0,
+      factorTributario: json['factor_tributario'] ?? '',
       unidadValor: json['unidad_valor'] ?? '',
-      puntaje: json['puntaje_calificacion'] ?? 0,
-      categoria: json['categoria_calificacion'] ?? '',
-      riesgo: json['nivel_riesgo'] ?? '',
-      estado: json['estado_calificacion'] ?? '',
-      fechaCalculo: json['fecha_calculo'] != null ? DateTime.parse(json['fecha_calculo']) : DateTime(2000,1,1),
-      justificacion: json['justificacion_resultado'],
+      puntajeCalificacion: json['puntaje_calificacion'] ?? 0,
+      categoriaCalificacion: json['categoria_calificacion'] ?? '',
+      nivelRiesgo: json['nivel_riesgo'] ?? '',
+      justificacionResultado: json['justificacion_resultado'] ?? '',
+      fechaCalculo: json['fecha_calculo'] != null
+          ? DateTime.parse(json['fecha_calculo'])
+          : DateTime.now(),
+      calificadorNombre: json['calificador_nombre'] ?? '',
+      estado: json['estado'],
+      fechaRevision: json['fecha_revision'] != null
+          ? DateTime.parse(json['fecha_revision'])
+          : null,
+      observaciones: json['observaciones'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'calificacion_id': calificacionId,
+      'empresa_rut': empresaRut,
+      'empresa_nombre': empresaNombre,
+      'empresa_pais': empresaPais,
+      'anio_tributario': anioTributario,
+      'tipo_calificacion': tipoCalificacion,
+      'monto_tributario': montoTributario,
+      'factor_tributario': factorTributario,
+      'unidad_valor': unidadValor,
+      'puntaje_calificacion': puntajeCalificacion,
+      'categoria_calificacion': categoriaCalificacion,
+      'nivel_riesgo': nivelRiesgo,
+      'justificacion_resultado': justificacionResultado,
+      'fecha_calculo': fechaCalculo.toIso8601String(),
+      'calificador_nombre': calificadorNombre,
+      'estado': estado,
+      'fecha_revision': fechaRevision?.toIso8601String(),
+      'observaciones': observaciones,
+    };
   }
 }

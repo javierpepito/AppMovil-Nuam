@@ -1,44 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:provider/provider.dart';
-
 import 'config/app_theme.dart';
-import 'providers/auth_provider.dart';
-import 'providers/equipo_provider.dart';
-import 'providers/calificacion_provider.dart';
-import 'providers/estadisticas_provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/home_screen.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://zebxaifwzynjogkrpnye.supabase.co', // ← Pega aquí tu URL de proyecto
-    anonKey: 'sb_publishable_MAWUgA0WD2eyjaQQvsSVDA_Fs0FvWYp',        // ← Y aquí tu anon key pública
-  );
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => EquipoProvider()),
-        ChangeNotifierProvider(create: (_) => CalificacionProvider()),
-        ChangeNotifierProvider(create: (_) => EstadisticasProvider()),
-      ],
-      child: MaterialApp(
-        title: 'App Jefe - NUAM',
-        theme: AppTheme.lightTheme,
-        debugShowCheckedModeBanner: false,
-        initialRoute: '/login',
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/dashboard': (context) => const DashboardScreen(),
-        },
+    return MaterialApp(
+      title: 'NUAM - Jefe de Equipo',
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
+      home: const AuthChecker(),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
+      },
+    );
+  }
+}
+
+/// Widget para verificar si hay sesión activa
+class AuthChecker extends StatefulWidget {
+  const AuthChecker({super.key});
+
+  @override
+  State<AuthChecker> createState() => _AuthCheckerState();
+}
+
+class _AuthCheckerState extends State<AuthChecker> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final isLoggedIn = await AuthService.isLoggedIn();
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance,
+              size: 80,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            const Text('Cargando...'),
+          ],
+        ),
       ),
     );
   }
