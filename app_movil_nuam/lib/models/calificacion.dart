@@ -6,8 +6,8 @@ class Calificacion {
   final String empresaPais;
   final int anioTributario;
   final String tipoCalificacion;
-  final int montoTributario;
-  final String factorTributario;
+  final double montoTributario;
+  final double factorTributario;
   final String unidadValor;
   final int puntajeCalificacion;
   final String categoriaCalificacion;
@@ -42,16 +42,22 @@ class Calificacion {
 
   factory Calificacion.fromJson(Map<String, dynamic> json) {
     return Calificacion(
-      calificacionId: json['calificacion_id'] ?? 0,
+      calificacionId: (json['calificacion_id'] is int) 
+          ? json['calificacion_id'] 
+          : (json['calificacion_id'] as num?)?.toInt() ?? 0,
       empresaRut: json['empresa_rut'] ?? '',
       empresaNombre: json['empresa_nombre'] ?? '',
       empresaPais: json['empresa_pais'] ?? '',
-      anioTributario: json['anio_tributario'] ?? 0,
+      anioTributario: (json['anio_tributario'] is int) 
+          ? json['anio_tributario'] 
+          : (json['anio_tributario'] as num?)?.toInt() ?? 0,
       tipoCalificacion: json['tipo_calificacion'] ?? '',
-      montoTributario: json['monto_tributario'] ?? 0,
-      factorTributario: json['factor_tributario'] ?? '',
+      montoTributario: (json['monto_tributario'] as num?)?.toDouble() ?? 0.0,
+      factorTributario: (json['factor_tributario'] as num?)?.toDouble() ?? 0.0,
       unidadValor: json['unidad_valor'] ?? '',
-      puntajeCalificacion: json['puntaje_calificacion'] ?? 0,
+      puntajeCalificacion: (json['puntaje_calificacion'] is int) 
+          ? json['puntaje_calificacion'] 
+          : (json['puntaje_calificacion'] as num?)?.toInt() ?? 0,
       categoriaCalificacion: json['categoria_calificacion'] ?? '',
       nivelRiesgo: json['nivel_riesgo'] ?? '',
       justificacionResultado: json['justificacion_resultado'] ?? '',

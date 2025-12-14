@@ -5,7 +5,7 @@ class ApiConfig {
   // ========================================
   
   /// Cambiar a true para usar servidor de desarrollo local
-  static const bool isDevelopment = true;
+  static const bool isDevelopment = false;
   
   /// URL base de desarrollo (tu PC)
   static const String devBaseUrl = 'http://localhost:8000';

@@ -83,11 +83,20 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print('DEBUG - Response calificaciones pendientes: $data');
+        
+        if (data['calificaciones'] == null) {
+          print('ERROR - calificaciones es null en la respuesta');
+          return [];
+        }
+        
         final calificaciones = (data['calificaciones'] as List)
             .map((c) => Calificacion.fromJson(c))
             .toList();
+        print('DEBUG - Total calificaciones parseadas: ${calificaciones.length}');
         return calificaciones;
       }
+      print('ERROR - Status code: ${response.statusCode}, Body: ${response.body}');
       return [];
     } catch (e) {
       print('Error al obtener calificaciones pendientes: $e');
