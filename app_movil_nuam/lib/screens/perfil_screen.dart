@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../models/usuario.dart';
+import '../config/app_theme.dart';
 
 /// Pantalla de Perfil: Ver y editar perfil, cerrar sesión
 class PerfilScreen extends StatefulWidget {
@@ -43,21 +44,51 @@ class _PerfilScreenState extends State<PerfilScreen> {
     if (result != null && result.isNotEmpty) {
       // Actualizar perfil
       setState(() => _isLoading = true);
-
-      final response = await ApiService.actualizarPerfil(
-        rut: _usuario!.rut,
-        telefono: result['telefono'],
-        correo: result['correo'],
-        direccion: result['direccion'],
-      );
+      Map<String, dynamic> response;
+      try {
+        response = await ApiService.actualizarPerfil(
+          rut: _usuario!.rut,
+          telefono: result['telefono'],
+          correo: result['correo'],
+        );
+      } catch (e) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al actualizar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
 
       if (response['success'] == true) {
-        // Actualizar usuario en sesión
-        final usuarioActualizado = response['user'] as Usuario;
-        await AuthService.updateUserData(usuarioActualizado);
+        // Actualizar usuario en sesión fusionando con el existente
+        final dynamic userPayload = response['user'];
+        final Map<String, dynamic>? userMap = userPayload is Map<String, dynamic>
+            ? userPayload
+            : (userPayload is Usuario ? userPayload.toJson() : null);
+
+        final Usuario merged = Usuario(
+          cuentaId: _usuario!.cuentaId,
+          rut: _usuario!.rut,
+          nombre: _usuario!.nombre,
+          apellido: _usuario!.apellido,
+          correo: userMap?['correo'] ?? _usuario!.correo,
+          telefono: userMap?['telefono'] ?? _usuario!.telefono,
+          equipoId: _usuario!.equipoId,
+          equipoNombre: _usuario!.equipoNombre,
+          // Ignoramos direccion y edad que pueda enviar el backend
+          direccion: _usuario!.direccion,
+          edad: _usuario!.edad,
+        );
+
+        await AuthService.updateUserData(merged);
 
         setState(() {
-          _usuario = usuarioActualizado;
+          _usuario = merged;
           _isLoading = false;
         });
 
@@ -86,19 +117,79 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _cerrarSesion() async {
     final confirmado = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      barrierDismissible: false,
+      builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Cerrar Sesión'),
-          content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.only(top: 24, left: 24, right: 24),
+          contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout, color: AppTheme.primary, size: 32),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Cerrar sesión',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '¿Estás seguro de que quieres cerrar sesión? Se cerrará tu sesión actual.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[700], height: 1.35),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Cerrar Sesión'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    ),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    ),
+                    child: const Text(
+                      'Cerrar sesión',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -177,10 +268,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         _buildInfoTile(Icons.badge, 'RUT', _usuario!.rut),
                         _buildInfoTile(Icons.email, 'Correo', _usuario!.correo),
                         _buildInfoTile(Icons.phone, 'Teléfono', _usuario!.telefono),
-                        if (_usuario!.direccion != null)
-                          _buildInfoTile(Icons.location_on, 'Dirección', _usuario!.direccion!),
-                        if (_usuario!.edad != null)
-                          _buildInfoTile(Icons.cake, 'Edad', '${_usuario!.edad} años'),
+                        // Nota: intencionalmente no mostramos Dirección ni Edad
                       ]),
                       const SizedBox(height: 16),
 
@@ -302,7 +390,6 @@ class EditarPerfilScreen extends StatefulWidget {
 class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   late TextEditingController _telefonoController;
   late TextEditingController _correoController;
-  late TextEditingController _direccionController;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -310,14 +397,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     super.initState();
     _telefonoController = TextEditingController(text: widget.usuario.telefono);
     _correoController = TextEditingController(text: widget.usuario.correo);
-    _direccionController = TextEditingController(text: widget.usuario.direccion ?? '');
   }
 
   @override
   void dispose() {
     _telefonoController.dispose();
     _correoController.dispose();
-    _direccionController.dispose();
     super.dispose();
   }
 
@@ -326,7 +411,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       Navigator.pop(context, {
         'telefono': _telefonoController.text.trim(),
         'correo': _correoController.text.trim(),
-        'direccion': _direccionController.text.trim(),
       });
     }
   }
@@ -339,64 +423,202 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _telefonoController,
-                decoration: const InputDecoration(
-                  labelText: 'Teléfono',
-                  prefixIcon: Icon(Icons.phone),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingrese su teléfono';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _correoController,
-                decoration: const InputDecoration(
-                  labelText: 'Correo',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingrese su correo';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Ingrese un correo válido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _direccionController,
-                decoration: const InputDecoration(
-                  labelText: 'Dirección (opcional)',
-                  prefixIcon: Icon(Icons.location_on),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _guardar,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text('Guardar Cambios'),
-                ),
-              ),
+         child: Form(
+           key: _formKey,
+           child: Column(
+             children: [
+               // Avatar/Encabezado decorativo
+               Container(
+                 width: 100,
+                 height: 100,
+                 decoration: BoxDecoration(
+                   gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primary.withOpacity(0.85),
+                      AppTheme.primary,
+                    ],
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                   ),
+                   borderRadius: BorderRadius.circular(20),
+                   boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.3),
+                       blurRadius: 10,
+                       offset: const Offset(0, 4),
+                     ),
+                   ],
+                 ),
+                 child: const Icon(
+                   Icons.person,
+                   size: 50,
+                   color: Colors.white,
+                 ),
+               ),
+               const SizedBox(height: 32),
+
+               // Campo de Teléfono
+               TextFormField(
+                 controller: _telefonoController,
+                 decoration: InputDecoration(
+                   labelText: 'Teléfono',
+                   hintText: '+56 9 1234 5678',
+                   prefixIcon: const Icon(Icons.phone_rounded),
+                   filled: true,
+                   fillColor: Colors.grey[100],
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: BorderSide.none,
+                   ),
+                   enabledBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: BorderSide.none,
+                   ),
+                   focusedBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: AppTheme.primary,
+                       width: 2,
+                     ),
+                   ),
+                   errorBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: Colors.red,
+                       width: 2,
+                     ),
+                   ),
+                   focusedErrorBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: Colors.red,
+                       width: 2,
+                     ),
+                   ),
+                   labelStyle: TextStyle(color: Colors.grey[600]),
+                   contentPadding: const EdgeInsets.symmetric(
+                     horizontal: 16,
+                     vertical: 14,
+                   ),
+                 ),
+                 keyboardType: TextInputType.phone,
+                 validator: (value) {
+                   if (value == null || value.isEmpty) {
+                     return 'Ingrese su teléfono';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 20),
+
+               // Campo de Correo
+               TextFormField(
+                 controller: _correoController,
+                 decoration: InputDecoration(
+                   labelText: 'Correo Electrónico',
+                   hintText: 'ejemplo@correo.com',
+                   prefixIcon: const Icon(Icons.email_rounded),
+                   filled: true,
+                   fillColor: Colors.grey[100],
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: BorderSide.none,
+                   ),
+                   enabledBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: BorderSide.none,
+                   ),
+                   focusedBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: AppTheme.primary,
+                       width: 2,
+                     ),
+                   ),
+                   errorBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: Colors.red,
+                       width: 2,
+                     ),
+                   ),
+                   focusedErrorBorder: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     borderSide: const BorderSide(
+                       color: Colors.red,
+                       width: 2,
+                     ),
+                   ),
+                   labelStyle: TextStyle(color: Colors.grey[600]),
+                   contentPadding: const EdgeInsets.symmetric(
+                     horizontal: 16,
+                     vertical: 14,
+                   ),
+                 ),
+                 keyboardType: TextInputType.emailAddress,
+                 validator: (value) {
+                   if (value == null || value.isEmpty) {
+                     return 'Ingrese su correo';
+                   }
+                   if (!value.contains('@')) {
+                     return 'Ingrese un correo válido';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 40),
+
+               // Botón Guardar Cambios
+               SizedBox(
+                 width: double.infinity,
+                 height: 50,
+                 child: ElevatedButton(
+                   onPressed: _guardar,
+                   style: ElevatedButton.styleFrom(
+                     backgroundColor: AppTheme.primary,
+                     foregroundColor: Colors.white,
+                     elevation: 4,
+                     shadowColor: AppTheme.primary.withOpacity(0.4),
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12),
+                     ),
+                   ),
+                   child: const Text(
+                     'Guardar Cambios',
+                     style: TextStyle(
+                       fontSize: 16,
+                       fontWeight: FontWeight.bold,
+                     ),
+                   ),
+                 ),
+               ),
+               const SizedBox(height: 16),
+
+               // Botón Cancelar
+               SizedBox(
+                 width: double.infinity,
+                 height: 50,
+                 child: OutlinedButton(
+                   onPressed: () => Navigator.pop(context),
+                   style: OutlinedButton.styleFrom(
+                     side: BorderSide(
+                       color: Colors.grey[400]!,
+                       width: 1.5,
+                     ),
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12),
+                     ),
+                   ),
+                   child: Text(
+                     'Cancelar',
+                     style: TextStyle(
+                       fontSize: 16,
+                       fontWeight: FontWeight.w600,
+                       color: Colors.grey[700],
+                     ),
+                   ),
+                 ),
+               ),
             ],
           ),
         ),

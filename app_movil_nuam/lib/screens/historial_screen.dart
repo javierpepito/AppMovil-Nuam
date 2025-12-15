@@ -24,7 +24,12 @@ class _HistorialScreenState extends State<HistorialScreen> with SingleTickerProv
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
     _loadData();
+  }
+
+  void _handleTabChange() {
+    setState(() {});
   }
 
   @override
@@ -54,13 +59,50 @@ class _HistorialScreenState extends State<HistorialScreen> with SingleTickerProv
     }
   }
 
+  String _getTitleByTab() {
+    if (_tabController.index == 0) {
+      return 'Aprobadas';
+    } else {
+      return 'Rechazadas';
+    }
+  }
+
+  IconData _getIconByTab() {
+    if (_tabController.index == 0) {
+      return Icons.check_circle;
+    } else {
+      return Icons.cancel;
+    }
+  }
+
+  Color _getAppBarColorByTab() {
+    if (_tabController.index == 0) {
+      return Colors.green;
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Historial'),
+        title: Row(
+          children: [
+            Icon(_getIconByTab(), color: Colors.white),
+            const SizedBox(width: 12),
+            Text(
+              _getTitleByTab(),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        backgroundColor: _getAppBarColorByTab(),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
           tabs: [
             Tab(
               icon: const Icon(Icons.check_circle),

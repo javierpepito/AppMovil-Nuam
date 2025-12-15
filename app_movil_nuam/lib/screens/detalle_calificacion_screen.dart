@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../config/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/calificacion.dart';
 
@@ -108,36 +109,110 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
 
   Future<String?> _showObservacionesDialog(String action) async {
     final controller = TextEditingController();
+    final bool isApprove = action.toLowerCase().startsWith('aprobar');
     return showDialog<String>(
       context: context,
-      builder: (context) {
+      barrierDismissible: false,
+      builder: (dialogContext) {
         return AlertDialog(
-          title: Text('$action Calificación'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Observaciones',
-              hintText: 'Ingrese sus observaciones...',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.only(top: 24, left: 24, right: 24),
+          contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: (isApprove ? Colors.green : Colors.red).withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isApprove ? Icons.check_circle : Icons.cancel,
+                  color: isApprove ? Colors.green : Colors.red,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '$action calificación',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 4),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: 'Observaciones',
+                  hintText: 'Ingrese sus observaciones...',
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                    borderSide: BorderSide(color: AppTheme.primary, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                ),
+                maxLines: 4,
+              ),
+            ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (controller.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ingrese observaciones')),
-                  );
-                  return;
-                }
-                Navigator.pop(context, controller.text.trim());
-              },
-              child: Text(action),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    ),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (controller.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ingrese observaciones')),
+                        );
+                        return;
+                      }
+                      Navigator.pop(dialogContext, controller.text.trim());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isApprove ? Colors.green : Colors.red,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    ),
+                    child: Text(
+                      action,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -232,20 +307,37 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
   }
 
   Widget _buildSection(String title, List<Widget> children) {
+    final icon = _iconForSectionTitle(title);
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: AppTheme.primary, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             ...children,
           ],
         ),
@@ -254,33 +346,68 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
   }
 
   Widget _buildInfoRow(String label, String value, {Color? color}) {
+    final valueWidget = color == null
+        ? Text(
+            value,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+          )
+        : Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 120,
             child: Text(
-              '$label:',
+              label.toUpperCase(),
               style: TextStyle(
-                fontWeight: FontWeight.w500,
+                fontSize: 12,
+                letterSpacing: 0.4,
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: color ?? Colors.black87,
-                fontWeight: color != null ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
+          const SizedBox(width: 6),
+          Expanded(child: valueWidget),
         ],
       ),
     );
+  }
+
+  IconData _iconForSectionTitle(String title) {
+    switch (title.toLowerCase()) {
+      case 'empresa':
+        return Icons.business;
+      case 'datos tributarios':
+        return Icons.receipt_long;
+      case 'resultado':
+        return Icons.analytics;
+      case 'justificación':
+        return Icons.notes;
+      case 'información adicional':
+        return Icons.info;
+      default:
+        return Icons.folder;
+    }
   }
 
   Color _getRiskColor() {
