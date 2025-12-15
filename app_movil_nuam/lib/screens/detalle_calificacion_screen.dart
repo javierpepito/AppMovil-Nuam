@@ -171,7 +171,7 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
                         _buildInfoRow('Tipo', _calificacion!.tipoCalificacion),
                         _buildInfoRow('Monto', NumberFormat.currency(locale: 'es_CL', symbol: '\$')
                             .format(_calificacion!.montoTributario)),
-                        _buildInfoRow('Factor', _calificacion!.factorTributario),
+                        _buildInfoRow('Factor', _calificacion!.factorTributario.toStringAsFixed(4)),
                         _buildInfoRow('Unidad', _calificacion!.unidadValor),
                       ]),
                       const SizedBox(height: 16),
