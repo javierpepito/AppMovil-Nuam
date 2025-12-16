@@ -126,7 +126,7 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: (isApprove ? Colors.green : Colors.red).withOpacity(0.12),
+                  color: (isApprove ? Colors.green : Colors.red).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -322,7 +322,7 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.12),
+                    color: AppTheme.primary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: AppTheme.primary, size: 20),
@@ -357,7 +357,7 @@ class _DetalleCalificacionScreenState extends State<DetalleCalificacionScreen> {
         : Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

@@ -219,7 +219,7 @@ class _InicioScreenState extends State<InicioScreen> {
             Expanded(
               child: StatCard(
                 title: 'Promedio Puntaje',
-                value: '${_stats!.promedioPuntajeAprobadas.toStringAsFixed(1)}',
+                value: _stats!.promedioPuntajeAprobadas.toStringAsFixed(1),
                 icon: Icons.star,
                 color: Colors.blue,
               ),

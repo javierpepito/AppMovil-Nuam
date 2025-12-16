@@ -131,7 +131,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.12),
+                  color: AppTheme.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.logout, color: AppTheme.primary, size: 32),
@@ -227,7 +227,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       // Avatar y nombre
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         child: Text(
                           _getInitials(_usuario!.nombreCompleto),
                           style: TextStyle(
@@ -434,7 +434,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                  decoration: BoxDecoration(
                    gradient: LinearGradient(
                     colors: [
-                      AppTheme.primary.withOpacity(0.85),
+                      AppTheme.primary.withValues(alpha: 0.85),
                       AppTheme.primary,
                     ],
                      begin: Alignment.topLeft,
@@ -443,7 +443,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                    borderRadius: BorderRadius.circular(20),
                    boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
+                      color: AppTheme.primary.withValues(alpha: 0.3),
                        blurRadius: 10,
                        offset: const Offset(0, 4),
                      ),
@@ -578,7 +578,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                      backgroundColor: AppTheme.primary,
                      foregroundColor: Colors.white,
                      elevation: 4,
-                     shadowColor: AppTheme.primary.withOpacity(0.4),
+                     shadowColor: AppTheme.primary.withValues(alpha: 0.4),
                      shape: RoundedRectangleBorder(
                        borderRadius: BorderRadius.circular(12),
                      ),
