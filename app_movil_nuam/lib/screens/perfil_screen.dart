@@ -208,7 +208,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo_footer.png',
+              width: 32,
+              height: 32,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+            const SizedBox(width: 8),
+            const Text('Perfil'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),

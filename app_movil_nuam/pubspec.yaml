@@ -34,6 +34,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+  
+  # Assets (imágenes y logos)
+  assets:
+    - assets/images/logo_nuam.png
+    - assets/images/logo_footer.png
+
+# Configuración del icono de la app
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo_footer.png"
+  adaptive_icon_background: "#FF6B35"
+  adaptive_icon_foreground: "assets/images/logo_footer.png"

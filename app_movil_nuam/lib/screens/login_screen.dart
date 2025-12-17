@@ -64,26 +64,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo o Título
-                  Icon(
-                    Icons.account_balance,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
+                  // Logo NUAM
+                  Image.asset(
+                    'assets/images/logo_nuam.png',
+                    width: 200,
+                    height: 200,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback si no está la imagen
+                      return Icon(
+                        Icons.account_balance,
+                        size: 80,
+                        color: Theme.of(context).primaryColor,
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
-                    'NUAM',
+                    'Jefe de Equipo',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                          color: Colors.grey[800],
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Jefe de Equipo',
+                    'Sistema de Calificaciones Tributarias',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),
                   ),
