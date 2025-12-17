@@ -244,6 +244,24 @@ class _HistorialScreenState extends State<HistorialScreen> with SingleTickerProv
             ),
             const SizedBox(height: 12),
 
+            // Monto, Factor y Unidad
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildDataPoint('Monto', NumberFormat.currency(locale: 'es_CL', symbol: '\$').format(calificacion.montoTributario)),
+                  _buildDataPoint('Factor', calificacion.factorTributario.toStringAsFixed(4)),
+                  _buildDataPoint('Unidad', calificacion.unidadValor),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
             // Calificador
             Row(
               children: [
@@ -327,6 +345,30 @@ class _HistorialScreenState extends State<HistorialScreen> with SingleTickerProv
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDataPoint(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 

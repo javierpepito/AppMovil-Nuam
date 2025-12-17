@@ -74,7 +74,7 @@ class _InicioScreenState extends State<InicioScreen> {
                   children: [
                     // Saludo
                     Text(
-                      'Hola, ${_usuario?.nombre ?? "Jefe"}',
+                      'Bienvenido ${_usuario?.nombre ?? ""} ${_usuario?.apellido ?? ""}',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
