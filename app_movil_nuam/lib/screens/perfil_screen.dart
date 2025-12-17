@@ -210,11 +210,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/logo_footer.png',
-              width: 32,
-              height: 32,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'assets/images/logo_footer.png',
+                width: 24,
+                height: 24,
+                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              ),
             ),
             const SizedBox(width: 8),
             const Text('Perfil'),

@@ -49,5 +49,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/logo_footer.png"
-  adaptive_icon_background: "#FF6B35"
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/logo_footer.png"
+  # Agregar padding para hacer el icono más pequeño (20% de margen)
+  adaptive_icon_padding: 20
