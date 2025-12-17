@@ -91,7 +91,7 @@ class _InicioScreenState extends State<InicioScreen> {
                     // Dashboard - Tarjetas de Estadísticas
                     if (_stats != null) ...[
                       Text(
-                        'Dashboard',
+                        'Tablero de Análisis',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
